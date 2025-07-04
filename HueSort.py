@@ -72,7 +72,7 @@ html = """
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Pregled slika i boja</title>
+    <title>HUE SORT</title>
     <style>
         body {
             font-family: 'Segoe UI', sans-serif;
@@ -123,7 +123,7 @@ html = """
 
         .image-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 25px;
             justify-items: center;
         }
@@ -139,12 +139,14 @@ html = """
         }
         .image-item:hover {
             transform: scale(1.02);
+            cursor: pointer;
         }
         .image-item img {
             width: 100%;
             height: 200px;
             border-radius: 8px;
             object-fit: cover;
+            transition: all 0.3s ease;
         }
         .image-item p {
             margin-top: 10px;
@@ -153,16 +155,51 @@ html = """
             word-wrap: break-word;
         }
 
-        @media screen and (max-width: 1000px) {
-            .image-grid {
-                grid-template-columns: repeat(3, 1fr);
-            }
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.85);
+            justify-content: center;
+            align-items: center;
         }
-        @media screen and (max-width: 700px) {
-            .image-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
+        .modal-content img {
+            max-height: 90vh;
+            max-width: 90vw;
+            border-radius: 8px;
+            transition: all 0.3s ease;
         }
+        .close, .nav-btn {
+            position: absolute;
+            top: 20px;
+            color: white;
+            font-size: 30px;
+            font-weight: bold;
+            background: rgba(0,0,0,0.3);
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .close {
+            right: 30px;
+        }
+        .nav-btn {
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        #prevBtn {
+            left: 30px;
+        }
+        #nextBtn {
+            right: 30px;
+        }
+
         @media screen and (max-width: 500px) {
             .image-grid {
                 grid-template-columns: 1fr;
@@ -171,7 +208,7 @@ html = """
     </style>
 </head>
 <body>
-    <h1>Dominantne boje i slike sortirane po Hue</h1>
+    <h1>Dominantne boje i sortiranje po tonu</h1>
     <div class="color-strip">
 """
 
@@ -187,17 +224,81 @@ for item in image_data_sorted:
 
 html += "</div>\n<div class='image-grid'>\n"
 
-# Image grid
+# Image grid with modal trigger
 for i, item in enumerate(image_data_sorted):
     html += f"""
-    <div class="image-item">
+    <div class="image-item" onclick="openModal({i})">
         <img src="data:image/jpeg;base64,{item['base64']}" alt="Slika {i+1}">
         <p><strong>{i+1}. {item['filename']}</strong><br>Hue: {item['hue']:.2f}</p>
     </div>
     """
 
-html += "</div>\n</body>\n</html>"
+# Modal HTML
+html += """
+</div>
 
+<div id="modal" class="modal" onclick="backgroundClose(event)">
+    <button class="close" onclick="closeModal()">&times;</button>
+    <button class="nav-btn" id="prevBtn" onclick="prevImage(event)">&#10094;</button>
+    <div class="modal-content" id="modal-content">
+        <img id="modal-img" src="" alt="Fullscreen slika">
+    </div>
+    <button class="nav-btn" id="nextBtn" onclick="nextImage(event)">&#10095;</button>
+</div>
+
+<script>
+    const images = ["""
+
+# pics into base64 for HTML
+html += ",".join([f'"data:image/jpeg;base64,{item["base64"]}"' for item in image_data_sorted])
+
+html += """];
+    let currentIndex = 0;
+
+    function openModal(index) {
+        currentIndex = index;
+        const modal = document.getElementById("modal");
+        const modalImg = document.getElementById("modal-img");
+        modalImg.src = images[currentIndex];
+        modal.style.display = "flex";
+    }
+
+    function closeModal() {
+        document.getElementById("modal").style.display = "none";
+    }
+
+    function backgroundClose(event) {
+        if (event.target.id === "modal") {
+            closeModal();
+        }
+    }
+
+    function nextImage(event) {
+        event.stopPropagation();
+        currentIndex = (currentIndex + 1) % images.length;
+        document.getElementById("modal-img").src = images[currentIndex];
+    }
+
+    function prevImage(event) {
+        event.stopPropagation();
+        currentIndex = (currentIndex - 1 + images.length) % images.length;
+        document.getElementById("modal-img").src = images[currentIndex];
+    }
+
+    // Keyboard navigation
+    document.addEventListener("keydown", function(event) {
+        const modal = document.getElementById("modal");
+        if (modal.style.display === "flex") {
+            if (event.key === "ArrowRight") nextImage(event);
+            else if (event.key === "ArrowLeft") prevImage(event);
+            else if (event.key === "Escape") closeModal();
+        }
+    });
+</script>
+
+</body>
+</html>
+"""
 
 
 # === 5. SAVE HTML ===
