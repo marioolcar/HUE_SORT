@@ -36,4 +36,8 @@ python analiza_slika.py ./putanja/do/slika
 
 ---
 
+## Rezultat
+
+Otvori **output.html** koji se nalazi u istoj mapi kao i program u Web pregledniku za prikaz sortiranih fotografija i dominantnih boja
+
 ![Screenshot nastale web stranice](screenshot.png "Screenshot Web stranice")
