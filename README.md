@@ -1,4 +1,4 @@
-# Program za analizu fotografija po dominantnoj Boji i Hue vrijednosti
+# Program za analizu fotografija po dominantnoj boji i Hue vrijednosti
 
 Ova Python skripta automatski analizira skup slika (.jpg/.png) unutar zadane mape, detektira dominantne boje, ton i svjetlinu boje, te generira interaktivnu HTML stranicu s:
 
