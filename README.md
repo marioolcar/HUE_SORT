@@ -30,7 +30,7 @@ pip install -r requirements.txt
 
 ---
 
-# Pokretanje skripte
+# Pokretanje skripte (Python verzija)
 
 1. Pokreni skriptu s ovom naredbom i zamijeni `./putanja/do/slika` sa željenom putanjom do mape s .jpg ili .png fotografijama
 
