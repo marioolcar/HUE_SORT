@@ -1,8 +1,10 @@
 # Program za analizu fotografija po dominantnoj boji i Hue vrijednosti
 
-[WEB VERZIJA PROGRAMA](https://marioolcar.github.io/HUE_SORT/)
+Program je dostupan u dvije verzije: 
 
-Ova Python skripta automatski analizira skup slika (.jpg/.png) unutar zadane mape, detektira dominantne boje, ton i svjetlinu boje, te generira interaktivnu HTML stranicu s:
+[WEB VERZIJA PROGRAMA](https://marioolcar.github.io/HUE_SORT/) i Python skripta
+
+Ovaj program analizira skup slika (.jpg/.png) unutar zadane mape, detektira dominantne boje, ton i svjetlinu boje, te generira interaktivnu HTML stranicu s:
 
 - trakom boja s HEX tooltipima
 - galerijom slika sortiranim po hue vrijednosti
@@ -10,14 +12,14 @@ Ova Python skripta automatski analizira skup slika (.jpg/.png) unutar zadane map
 
 ---
 
-## Zahtjevi
+## Zahtjevi (Python verzija)
 
 Python 3.7+
 Preporučeno virtualno okruženje (`venv`, `conda`, itd.)
 
 ---
 
-## Instalacija biblioteka
+## Instalacija biblioteka (Python verzija)
 
 1. Kloniraj repozitorij (ili kopiraj skriptu i `requirements.txt`)
 2. Pokreni terminal i instaliraj potrebne biblioteke:
