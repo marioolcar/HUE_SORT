@@ -31,7 +31,7 @@ pip install -r requirements.txt
 1. Pokreni skriptu s ovom naredbom i zamijeni `./putanja/do/slika` s željenom putanjom do mape s .jpg ili .png fotografijama
 
 ```bash
-python analiza_slika.py ./putanja/do/slika
+python HueSort.py ./putanja/do/slika
 ```
 
 ---
