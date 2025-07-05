@@ -28,7 +28,7 @@ pip install -r requirements.txt
 
 # Pokretanje skripte
 
-1. Pokreni skriptu s ovom naredbom i zamijeni `./putanja/do/slika` s željenom putanjom do mape s .jpg ili .png fotografijama
+1. Pokreni skriptu s ovom naredbom i zamijeni `./putanja/do/slika` sa željenom putanjom do mape s .jpg ili .png fotografijama
 
 ```bash
 python HueSort.py ./putanja/do/slika
