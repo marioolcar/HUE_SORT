@@ -4,34 +4,87 @@
 		<meta charset="UTF-8" />
 		<title>HUE SORT</title>
 		<style>
+			* {
+				box-sizing: border-box;
+			}
 			body {
 				font-family: "Segoe UI", sans-serif;
-				background-color: #f4f4f4;
+				background-color: #f8f9fa;
 				margin: 0;
-				padding: 20px;
+				padding: 0;
+				color: #333;
+				background: #f4f4f4;
+				transition: background 1s ease, color 0.5s ease;
 			}
+
 			h1 {
 				text-align: center;
-				color: #333;
+				padding: 30px 20px 10px;
+				margin: 0;
+				color: #222;
+				font-size: 2rem;
 			}
 			#drop-area {
-				border: 3px dashed #aaa;
-				border-radius: 12px;
-				padding: 30px;
+				border: 3px dashed #ccc;
+				border-radius: 16px;
+				padding: 40px 20px;
 				text-align: center;
-				color: #555;
-				background-color: #fff;
-				margin-bottom: 20px;
+				background-color: #ffffff;
+				margin: 20px auto;
+				max-width: 800px;
+				transition: background-color 0.3s, border-color 0.3s;
 			}
 			#drop-area.hover {
-				border-color: #333;
-				background-color: #eef;
+				border-color: #007bff;
+				background-color: #eef6ff;
+			}
+			#drop-area p {
+				font-size: 1.1rem;
+				margin-bottom: 20px;
+				color: #555;
+			}
+			#info-bar {
+				text-align: center;
+				margin: 15px auto 25px;
+				font-size: 1.1rem;
+			}
+			button {
+				margin: 5px;
+				padding: 12px 20px;
+				background: linear-gradient(270deg, #0066cc, #004f99, #00aaff);
+				background-size: 600% 600%;
+				color: white;
+				font-size: 1rem;
+				border: none;
+				border-radius: 8px;
+				cursor: pointer;
+				box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+				transition: transform 0.3s ease, box-shadow 0.3s ease;
+			}
+			button:hover {
+				filter: brightness(1.1);
+				transform: scale(1.05);
+				box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+				animation: gradientShift 3s ease infinite;
+			}
+			@keyframes gradientShift {
+				0% {
+					background-position: 0% 50%;
+				}
+				50% {
+					background-position: 100% 50%;
+				}
+				100% {
+					background-position: 0% 50%;
+				}
 			}
 			.color-strip {
 				display: flex;
-				overflow-x: auto;
+				flex-wrap: wrap;
 				border: 1px solid #ddd;
-				margin-bottom: 20px;
+				border-radius: 8px;
+				margin: 0 auto 30px;
+				max-width: 90%;
 			}
 			.color-block {
 				width: 60px;
@@ -48,28 +101,30 @@
 				color: white;
 				padding: 4px 8px;
 				border-radius: 4px;
-				font-size: 11px;
 				opacity: 0;
 				transition: opacity 0.3s;
 				white-space: nowrap;
+				z-index: 1000;
 			}
 			.color-block:hover .tooltip {
 				opacity: 1;
 			}
-
 			.image-grid {
 				display: grid;
-				grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-				gap: 20px;
+				grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+				gap: 24px;
+				padding: 0 20px 40px;
+				max-width: 1200px;
+				margin: 0 auto;
 			}
 			.image-item {
 				background: #fff;
-				border-radius: 10px;
+				border-radius: 12px;
 				overflow: hidden;
-				box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+				box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
 				text-align: center;
 				cursor: pointer;
-				transition: transform 0.2s;
+				transition: transform 0.2s ease;
 			}
 			.image-item:hover {
 				transform: scale(1.03);
@@ -80,10 +135,10 @@
 				object-fit: cover;
 			}
 			.image-item p {
-				margin: 8px;
-				font-size: 0.9em;
+				margin: 10px;
+				font-size: 0.95em;
+				text-wrap: wrap;
 			}
-
 			/* Modal */
 			.modal {
 				display: none;
@@ -128,7 +183,6 @@
 			#nextBtn {
 				right: 30px;
 			}
-
 			/* Loader */
 			#loader {
 				position: fixed;
@@ -136,31 +190,13 @@
 				left: 0;
 				width: 100%;
 				height: 100%;
-				background: rgba(255, 255, 255, 0.8);
+				background: rgba(255, 255, 255, 0.85);
 				z-index: 1000;
 				display: none;
 				align-items: center;
 				justify-content: center;
 				font-size: 1.5rem;
-				color: #444;
-			}
-
-			#info-bar {
-				text-align: center;
-				margin-bottom: 15px;
-			}
-
-			button {
-				margin: 5px;
-				padding: 10px 16px;
-				background-color: #0066cc;
-				color: white;
-				border: none;
-				border-radius: 6px;
-				cursor: pointer;
-			}
-			button:hover {
-				background-color: #004f99;
+				color: #333;
 			}
 		</style>
 	</head>
@@ -182,7 +218,7 @@
 			<button onclick="resetAll()">Resetiraj</button>
 		</div>
 
-		<div id="info-bar">Učitanih slika: <span id="image-count">0</span></div>
+		<div id="info-bar">Učitano slika: <span id="image-count">0</span></div>
 
 		<div class="color-strip" id="color-strip"></div>
 		<div class="image-grid" id="image-grid"></div>
@@ -203,7 +239,6 @@
 
 		<!-- Loader -->
 		<div id="loader">Učitavanje slika...</div>
-
 		<script>
 			const dropArea = document.getElementById("drop-area");
 			const colorStrip = document.getElementById("color-strip");
@@ -220,24 +255,82 @@
 				e.preventDefault();
 				dropArea.classList.add("hover");
 			});
-
 			dropArea.addEventListener("dragleave", () =>
 				dropArea.classList.remove("hover")
 			);
-
 			dropArea.addEventListener("drop", (e) => {
 				e.preventDefault();
 				dropArea.classList.remove("hover");
 				handleFiles(e.dataTransfer.files);
 			});
-
 			document.getElementById("fileElem").addEventListener("change", (e) => {
 				handleFiles(e.target.files);
 			});
 
+			function updateBackgroundGradient() {
+				const colorCount = {};
+				imageDataList.forEach((data) => {
+					const hex = rgbToHex(...data.dominantColor);
+					colorCount[hex] = (colorCount[hex] || 0) + 1;
+				});
+
+				// Sortiraj po broju pojavljivanja
+				const sortedColors = Object.entries(colorCount)
+					.sort((a, b) => b[1] - a[1])
+					.slice(0, 5) // top 5 najčešćih boja
+					.map(([hex]) => hex);
+
+				if (sortedColors.length > 1) {
+					document.body.style.background = `linear-gradient(120deg, ${sortedColors.join(
+						", "
+					)})`;
+				} else if (sortedColors.length === 1) {
+					document.body.style.background = sortedColors[0];
+				} else {
+					document.body.style.background = "#f4f4f4";
+				}
+
+				// Izračunaj kontrast za tekst
+				updateTextContrast(sortedColors[0] || "#f4f4f4");
+			}
+
+			function updateTextContrast(backgroundHex) {
+				const rgb = hexToRgb(backgroundHex);
+				const luminance = getLuminance(rgb.r, rgb.g, rgb.b);
+
+				const textColor = luminance > 0.5 ? "#000000" : "#ffffff";
+				//document.body.style.color = textColor;
+
+				// Prilagodi i ostale elemente po potrebi
+				//const buttons = document.querySelectorAll("button");
+				//buttons.forEach((btn) => (btn.style.color = textColor));
+
+				const headings = document.querySelectorAll("h1, h2, h3, div");
+				headings.forEach((el) => (el.style.color = textColor));
+				const headings2 = document.querySelectorAll("p");
+				headings2.forEach((el) => (el.style.color = "#000000"));
+			}
+			function hexToRgb(hex) {
+				const bigint = parseInt(hex.slice(1), 16);
+				return {
+					r: (bigint >> 16) & 255,
+					g: (bigint >> 8) & 255,
+					b: bigint & 255,
+				};
+			}
+
+			function getLuminance(r, g, b) {
+				const a = [r, g, b].map((v) => {
+					v /= 255;
+					return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+				});
+				return 0.2126 * a[0] + 0.7152 * a[1] + 0.0722 * a[2];
+			}
+
 			function handleFiles(files) {
-				//loader.style.display = "flex";
 				const fileArray = [...files].filter((f) => f.type.startsWith("image/"));
+				if (fileArray.length === 0) return;
+
 				let processed = 0;
 
 				fileArray.forEach((file) => {
@@ -245,12 +338,17 @@
 					reader.onload = () => {
 						const img = new Image();
 						img.onload = () => {
-							processImage(img, file.name);
+							const data = processImage(img, file.name);
+							imageDataList.push(data);
+							if (processed % 8 == 0) {
+								renderItem(data);
+							}
 							processed++;
-							document.getElementById("image-count").innerHTML = processed;
-
+							imageCount.textContent =
+								imageDataList.length + "/" + fileArray.length;
 							if (processed === fileArray.length) {
-								render();
+								renderItem(data);
+
 								loader.style.display = "none";
 							}
 						};
@@ -272,7 +370,6 @@
 					gSum = 0,
 					bSum = 0,
 					total = 0;
-
 				for (let i = 0; i < pixels.length; i += 4) {
 					rSum += pixels[i];
 					gSum += pixels[i + 1];
@@ -284,23 +381,25 @@
 				const g = gSum / total;
 				const b = bSum / total;
 				const [h, s, v] = rgbToHsv(r, g, b);
-				imageDataList.push({
+
+				return {
 					src: image.src,
 					hue: h,
 					brightness: v,
 					dominantColor: [r, g, b],
 					filename,
-				});
+				};
 			}
 
-			function render() {
+			function renderItem(data) {
 				imageDataList.sort((a, b) => a.hue - b.hue);
+
 				colorStrip.innerHTML = "";
 				imageGrid.innerHTML = "";
-				imageCount.textContent = imageDataList.length;
 
 				imageDataList.forEach((data, i) => {
 					const hex = rgbToHex(...data.dominantColor);
+
 					const block = document.createElement("div");
 					block.className = "color-block";
 					block.style.backgroundColor = hex;
@@ -312,14 +411,15 @@
 					const item = document.createElement("div");
 					item.className = "image-item";
 					item.innerHTML = `
-        <img src="${data.src}" alt="">
-        <p><strong>${i + 1}. ${
-						data.filename
-					}</strong><br>Hue: ${data.hue.toFixed(2)}</p>
-      `;
+						<img src="${data.src}" alt="">
+						<p><strong>${i + 1}. ${data.filename}</strong><br>Hue: ${data.hue.toFixed(
+						2
+					)}</p>
+					`;
 					item.onclick = () => openModal(i);
 					imageGrid.appendChild(item);
 				});
+				updateBackgroundGradient();
 			}
 
 			function openModal(index) {
@@ -327,21 +427,17 @@
 				modalImg.src = imageDataList[currentIndex].src;
 				modal.style.display = "flex";
 			}
-
 			function closeModal() {
 				modal.style.display = "none";
 			}
-
 			function backgroundClose(e) {
 				if (e.target.id === "modal") closeModal();
 			}
-
 			function nextImage(e) {
 				e.stopPropagation();
 				currentIndex = (currentIndex + 1) % imageDataList.length;
 				modalImg.src = imageDataList[currentIndex].src;
 			}
-
 			function prevImage(e) {
 				e.stopPropagation();
 				currentIndex =
@@ -362,6 +458,7 @@
 				colorStrip.innerHTML = "";
 				imageGrid.innerHTML = "";
 				imageCount.textContent = "0";
+				modal.style.display = "none";
 			}
 
 			function rgbToHex(r, g, b) {
