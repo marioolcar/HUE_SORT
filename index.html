@@ -198,6 +198,83 @@
 				font-size: 1.5rem;
 				color: #333;
 			}
+
+			#collage-section {
+				max-width: 1200px;
+				margin: 30px auto;
+				padding: 0 20px 40px;
+			}
+			.collage-row {
+				display: flex;
+				justify-content: space-between;
+				margin-bottom: 20px;
+				gap: 16px;
+			}
+			.collage {
+				width: 100%;
+				aspect-ratio: 9 / 16;
+				display: flex;
+				flex-direction: column;
+				background-color: #eee;
+				overflow: hidden;
+				border-radius: 12px;
+				box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+			}
+
+			.collage img {
+				flex: 1;
+				object-fit: cover;
+				width: 100%;
+			}
+			#collage-section {
+				max-width: 1200px;
+				margin: 30px auto;
+				padding: 0 20px;
+			}
+
+			#collage-grid {
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+				gap: 24px;
+				justify-content: center;
+			}
+
+			.collage-wrapper {
+				aspect-ratio: 9 / 16;
+				background-color: #000;
+				border-radius: 12px;
+				overflow: hidden;
+				display: flex;
+				flex-direction: column;
+				box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+			}
+
+			.collage-wrapper img {
+				flex: 1;
+				width: 100%;
+				object-fit: cover;
+			}
+
+			.collage-wrapper {
+				display: flex;
+				flex-direction: column;
+				gap: 5px;
+				border-radius: 12px;
+				overflow: hidden;
+				transition: transform 0.3s ease, box-shadow 0.3s ease;
+			}
+
+			.collage-wrapper:hover {
+				transform: scale(1.05);
+				box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+			}
+
+			.collage-wrapper img {
+				width: 100%;
+				height: auto;
+				object-fit: cover;
+				border-radius: 0; /* Ili 12px ako želiš da i slike unutar kolaža imaju zaobljenje */
+			}
 		</style>
 	</head>
 	<body>
@@ -238,7 +315,14 @@
 		</div>
 
 		<!-- Loader -->
-		<div id="loader">Učitavanje slika...</div>
+		<!-- <div id="loader">Učitavanje slika...</div> -->
+		<!-- Sekcija za kolaže -->
+		<div id="collage-section">
+			<h2 style="text-align: center">
+				Kolaži sa sličnim tonovima (3 slike, 9:16)
+			</h2>
+			<div id="collage-grid"></div>
+		</div>
 		<script>
 			const dropArea = document.getElementById("drop-area");
 			const colorStrip = document.getElementById("color-strip");
@@ -268,30 +352,46 @@
 			});
 
 			function updateBackgroundGradient() {
-				const colorCount = {};
-				imageDataList.forEach((data) => {
-					const hex = rgbToHex(...data.dominantColor);
-					colorCount[hex] = (colorCount[hex] || 0) + 1;
-				});
-
-				// Sortiraj po broju pojavljivanja
-				const sortedColors = Object.entries(colorCount)
-					.sort((a, b) => b[1] - a[1])
-					.slice(0, 5) // top 5 najčešćih boja
-					.map(([hex]) => hex);
-
-				if (sortedColors.length > 1) {
-					document.body.style.background = `linear-gradient(120deg, ${sortedColors.join(
-						", "
-					)})`;
-				} else if (sortedColors.length === 1) {
-					document.body.style.background = sortedColors[0];
-				} else {
+				if (imageDataList.length === 0) {
 					document.body.style.background = "#f4f4f4";
+					updateTextContrast("#f4f4f4");
+					return;
 				}
 
-				// Izračunaj kontrast za tekst
-				updateTextContrast(sortedColors[0] || "#f4f4f4");
+				// Prikupi dominantne boje i izračunaj hue
+				const hueMap = imageDataList.map((data) => {
+					const [r, g, b] = data.dominantColor;
+					const [h, s, v] = rgbToHsv(r, g, b);
+					return { hex: rgbToHex(r, g, b), hue: h };
+				});
+
+				// Grupiraj i sort by hue
+				const sorted = hueMap.reduce((acc, cur) => {
+					acc[cur.hex] = acc[cur.hex] || { count: 0, hue: cur.hue };
+					acc[cur.hex].count++;
+					return acc;
+				}, {});
+
+				const topColors = Object.entries(sorted)
+					.sort((a, b) => b[1].count - a[1].count)
+					.slice(0, 5)
+					.map(([hex, val]) => ({ hex, hue: val.hue }));
+
+				// Sortiraj po hue kako bi gradijent bio harmoničan
+				topColors.sort((a, b) => a.hue - b.hue);
+				const gradientColors = topColors.map((c) => c.hex);
+
+				// Postavi glatki gradijent
+				if (gradientColors.length === 1) {
+					document.body.style.background = gradientColors[0];
+				} else {
+					document.body.style.background = `linear-gradient(135deg, ${gradientColors.join(
+						", "
+					)})`;
+				}
+
+				// Postavi kontrast za tekst
+				updateTextContrast(gradientColors[0]);
 			}
 
 			function updateTextContrast(backgroundHex) {
@@ -341,7 +441,7 @@
 							const data = processImage(img, file.name);
 							imageDataList.push(data);
 							if (processed % 8 == 0) {
-								renderItem(data);
+								// renderItem(data);
 							}
 							processed++;
 							imageCount.textContent =
@@ -497,6 +597,74 @@
 					h /= 6;
 				}
 				return [h * 360, s, v];
+			}
+
+			function renderItem(data) {
+				imageDataList.sort((a, b) => a.hue - b.hue);
+
+				colorStrip.innerHTML = "";
+				imageGrid.innerHTML = "";
+
+				imageDataList.forEach((data, i) => {
+					const hex = rgbToHex(...data.dominantColor);
+
+					const block = document.createElement("div");
+					block.className = "color-block";
+					block.style.backgroundColor = hex;
+					block.innerHTML = `<div class="tooltip">${hex}<br>H:${data.hue.toFixed(
+						0
+					)}°<br>B:${(data.brightness * 100).toFixed(0)}%</div>`;
+					colorStrip.appendChild(block);
+
+					const item = document.createElement("div");
+					item.className = "image-item";
+					item.innerHTML = `
+					<img src="${data.src}" alt="">
+					<p><strong>${i + 1}. ${data.filename}</strong><br>Hue: ${data.hue.toFixed(
+						2
+					)}</p>
+				`;
+					item.onclick = () => openModal(i);
+					imageGrid.appendChild(item);
+				});
+
+				updateBackgroundGradient();
+				generateCollages();
+			}
+			function generateCollages() {
+				const collageGrid = document.getElementById("collage-grid");
+				collageGrid.innerHTML = "";
+
+				if (imageDataList.length < 3) return;
+
+				const sorted = [...imageDataList].sort((a, b) => a.hue - b.hue);
+				const groups = [];
+
+				for (let i = 0; i < sorted.length - 2; i++) {
+					const g1 = sorted[i],
+						g2 = sorted[i + 1],
+						g3 = sorted[i + 2];
+					const hueDiff = Math.abs(g1.hue - g3.hue);
+					if (hueDiff < 30) {
+						groups.push([g1, g2, g3]);
+						i += 2; // preskoči iskorištene
+					}
+				}
+
+				groups.forEach((group) => {
+					const wrapper = document.createElement("div");
+					wrapper.className = "collage-wrapper";
+
+					group.forEach((imgData) => {
+						const img = document.createElement("img");
+						img.src = imgData.src;
+						img.alt = imgData.filename;
+						img.title = imgData.filename;
+						wrapper.appendChild(img);
+					});
+
+					collageGrid.appendChild(wrapper);
+				});
 			}
 		</script>
 	</body>
